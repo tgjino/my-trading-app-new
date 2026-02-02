@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv
+tradingData.db 
+ENV/
+.env
+
+# .NET
+bin/
+obj/
+*.user
+.vs/
+
+# Node/Next.js
+node_modules/
+.next/
+out/
+ai-analytics/.venv/
+ai-analytics/venv/
+node_modules/
+.next/
+bin/
+obj/
+*.db
+*.log

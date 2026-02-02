@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsAspireHost>true</IsAspireHost>
+    <NoWarn>$(NoWarn);ASPIREHOSTINGPYTHON001</NoWarn>
+    <UserSecretsId>c3b70289-4f4f-4208-9d1a-5f909692a48d</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\tradingService\tradingService.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.0.0" />
+    <PackageReference Include="Aspire.Hosting.Nodejs" Version="9.0.0" />
+    <PackageReference Include="Aspire.Hosting.Python" Version="9.0.0" />
+  </ItemGroup>
+
+</Project>
