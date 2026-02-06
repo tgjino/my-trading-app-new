@@ -1,0 +1,9 @@
+{
+"name": "MyTradingApp",
+"image": "mcr.microsoft.com/devcontainers/dotnet:8.0",
+"features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:1": {}
+},
+"postCreateCommand": "dotnet workload install aspire && cd my-trading-app-face && npm install && pip install fyers-apiv3"
+}
+
