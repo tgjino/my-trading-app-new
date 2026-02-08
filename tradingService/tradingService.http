@@ -1,6 +1,14 @@
-@tradingService_HostAddress = http://localhost:5010
+@tradingService_HostAddress = http://localhost:5025
+
+
+# പൈത്തൺ കണക്ഷൻ ചെക്ക് ചെയ്യാനുള്ള എൻഡ്‌പോയിന്റ്
+GET {{tradingService_HostAddress}}/test-python
+Accept: application/json
+
+###
 
 GET {{tradingService_HostAddress}}/weatherforecast/
 Accept: application/json
+
 
 ###

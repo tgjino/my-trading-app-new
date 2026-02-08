@@ -1,11 +1,21 @@
-var builder = WebApplication.CreateBuilder(args);
+using Microsoft.AspNetCore.Http;
+using System.Net.Http;
+// using MyTradingApp.ServiceDefaults;
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+var builder = WebApplication.CreateBuilder(args);
+builder.AddServiceDefaults();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddHttpClient("AnalyticsClient", client =>
+{
+    client.BaseAddress = new("http://python-backend");
+});
+
 var app = builder.Build();
+
+// അസ്പയർ ഡാഷ്‌ബോർഡിൽ ഹെൽത്ത് ചെക്കുകൾ കാണാൻ
+app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -14,31 +24,34 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.MapGet("/test-python", async (IHttpClientFactory clientFactory) => {
+    
+    try
+    {
+        var client = clientFactory.CreateClient("AnalyticsClient");
+        var response = await client.GetStringAsync("/test");
+        return Results.Ok(new { Status = "Connected", PythonResponse = response});
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Could not connect to Python: {ex.Message}");
+    }
+});
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.MapPost("/send-to-python", async (string token, IHttpClientFactory clientFactory) => {
+    var client = clientFactory.CreateClient("AnalyticsClient");
+    try {
+        var response = await client.PostAsJsonAsync("/process-data", new { access_token = token });
+        var result = await response.Content.ReadAsStringAsync();
+        return Results.Ok(result);
+    }
+    catch (Exception ex) {
+        return Results.Problem(ex.Message);
+    }
+});
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
+app.MapGet("/",() => "Trading Service is Running ");
+
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
