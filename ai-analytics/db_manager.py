@@ -1,7 +1,7 @@
 import os
 import sqlite3
 
-DB_PATH = os.getenv("DB_PATH", "trading.db")
+DB_PATH = os.getenv("DB_PATH", "pydata.db")
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)

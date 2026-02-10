@@ -22,6 +22,9 @@ var tradesEngine = builder.AddPythonApp( name: "tradesEngine",
                                         .WithExternalHttpEndpoints();
 
 var tradingService = builder.AddProject<Projects.tradingService>("tradingService")
+                                        .WithEnvironment("Fyers__ClientId", clientId)
+                                        .WithEnvironment("Fyers__SecretKey", secretKey)
+                                        .WithEnvironment("Fyers__RedirectUri", redirectUri)
                                         .WithReference(tradesEngine)                
                                         .WithReference(pythonBackend);
 
