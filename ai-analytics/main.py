@@ -35,7 +35,7 @@ def is_market_open_live(fyers, exchanage="NSE"):
         logger.error(f"Error checking market status: {e}")
         return False, "Error"
 
-def start_fyers_stream(token, on_message_callback):
+def start_fyers_stream(token, on_message_callback, symbol="NSE:NIFTY50-INDEX"):
     try:
         client_id = os.getenv("client_id")
         access_token = f"{client_id}:{token}"
@@ -44,14 +44,14 @@ def start_fyers_stream(token, on_message_callback):
             access_token=access_token,
             log_path=os.getcwd(),
             on_message=on_message_callback,
-            on_connect=lambda: logger.info("Connected to Fyers Stream"),
+            on_connect=lambda: logger.info(f"Connected to Fyers Stream {symbol}"),
             on_error=lambda err: logger.error(f"Stream Error: {str(err)}"),
             on_close=lambda: logger.info("Stream Connection Closed")
         )
 
         fyers_socket.connect()
-        fyers_socket.subscribe(symbols=["NSE:NIFTY50-INDEX"], data_type="symbolData")
-        logger.info("NIFTY50-INDEX subscription request sent")
+        fyers_socket.subscribe(symbols=[symbol], data_type="symbolData")
+        logger.info(f"Subscription request sent for symbol: {symbol}")
         return fyers_socket
     except Exception as e:
         logger.error(f"Error starting Fyers stream: {str(e)}")

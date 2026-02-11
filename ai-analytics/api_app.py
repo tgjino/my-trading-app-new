@@ -41,10 +41,9 @@ def get_valid_fyers():
 price_queue = queue.Queue()
 
 def on_price_update(message):
-    if message.get('ltp'):
-        price = message.get('ltp')
-        logger.info(f"Received price update: {price}")
-        price_queue.put(price)
+    if 'ltp' in message:
+        logger.info(f"Received price update: {message.get('symbol')}")
+        price_queue.put(message)
 
 @app.get("/")
 def home():
@@ -66,31 +65,35 @@ async def process_data(data: TokenData):
         return {"statue":"Error","message":str(e)}
 
 @app.websocket("/ws/price")
-async def price_stream(websocket:WebSocket):
+async def price_stream(websocket:WebSocket, symbol: str = "NSE:NIFTY50-INDEX"):
     await websocket.accept()
     token = db_manager.get_token()
-    fyers = get_valid_fyers()
-    
-    if not fyers:
-        await websocket.send_json({"error":"Authentication failed"})
+ 
+    if not token:
+        logger.error("No token found. WebSocket connection rejected.")
         await websocket.close()
         return
 
-    is_open, status = main.is_market_open_live(fyers)
-    if not is_open:
-        await websocket.send_json({"status": "Offline","Message": f"Market is{status}"})
-
-    fyers_socket = main.start_fyers_stream(token, on_price_update)
     try:
-        while True:   
-            try:
-                price = price_queue.get(timeout=1.0)
-                await websocket.send_json({"nifty":price})
-            except queue.Empty:
-                continue
+        fyers = main.get_fyers_instance(token)
+        initial_data = fyers.quotes({"symbols": symbol})
+        
+        if initial_data.get('s') == 'ok':
+            full_data = initial_data['d'][0]['v']
+            await websocket.send_json({"symbol": symbol,"data": full_data,"type": "Initial"})
+        main.start_fyers_stream(token, on_price_update, symbol)
+
+        while True:
+            if not price_queue.empty():
+                price = price_queue.get()
+                if price.get('symbol') == symbol:
+                    await websocket.send_json({"symbol": symbol, "data": price, "status": "Price Update"})
+            await asyncio.sleep(0.1)  # Stream-നു ഇടവേള നൽകുന്നു
     
     except WebSocketDisconnect:
         logger.info("User disconnected, stopping stream")
+    except Exception as e:
+        logger.error(f"Error in WebSocket connection: {str(e)}")
     # finally:
     #     pass
 
